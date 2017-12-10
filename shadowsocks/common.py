@@ -208,6 +208,9 @@ def parse_header(data):
     if addrtype == ADDRTYPE_IPV4:
         if len(data) >= 7:
             dest_addr = socket.inet_ntoa(data[1:5])
+            if b'\x92' in dest_addr or b'\x96' in dest_addr or b'\xe2' in dest_addr:
+                logging.error('ipv4 is closed')
+                return None
             dest_port = struct.unpack('>H', data[5:7])[0]
             header_length = 7
         else:
@@ -218,7 +221,7 @@ def parse_header(data):
             if len(data) >= 4 + addrlen:
                 dest_addr = data[2:2 + addrlen]
                 if b'\x92' in dest_addr or b'\x96' in dest_addr or b'\xe2' in dest_addr:
-                    logging.error('addr error')
+                    logging.error('host is closed')
                     return None
                 dest_port = struct.unpack('>H', data[2 + addrlen:4 +
                                                      addrlen])[0]
@@ -230,6 +233,9 @@ def parse_header(data):
     elif addrtype == ADDRTYPE_IPV6:
         if len(data) >= 19:
             dest_addr = socket.inet_ntop(socket.AF_INET6, data[1:17])
+            if b'\x92' in dest_addr or b'\x96' in dest_addr or b'\xe2' in dest_addr:
+                logging.error('ipv6 is closed')
+                return None
             dest_port = struct.unpack('>H', data[17:19])[0]
             header_length = 19
         else:
